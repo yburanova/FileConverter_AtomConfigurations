@@ -1,20 +1,18 @@
-package kirklandfile;
+package kirklandfile.FileConverter_AtomConfigurations;
+
+import kirklandfile.DensityChange;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
  * Created by buranova on 16.11.2016.
  */
 public class ChemicalProfile extends JFrame {
-    static double[][] temp = null;
     static double mask = 4;
     static double radiusAl = 1.75; // Angstrom
     static double volume = 4*Math.PI*radiusAl*radiusAl*radiusAl/3; // 22.4486 for ideal
@@ -25,10 +23,16 @@ public class ChemicalProfile extends JFrame {
     static double sizeY;
     static double sizeZ;
 
+    static double[][] directionX;
+
     public static void main(String[] args) throws IOException
     {
-        Scanner scanner = new Scanner(new File("Al3Sc_110_20.5Proz_Kirkland.xyz"));
-        FileWriter fw = new FileWriter("Al3Sc_110_20.5Proz_Kirkland_profile_111.txt");
+        Scanner scanner = new Scanner(new File("Al3Sc_110_8.125Angstrom_5Proz_Kirkland.xyz"));
+
+        FileWriter fw100 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_100.txt");
+        FileWriter fw110 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_110.txt");
+        FileWriter fw111 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_111.txt");
+
         scanner.nextLine(); // line with comments
         String[] parameters = scanner.nextLine().split(" ");
 
@@ -38,9 +42,19 @@ public class ChemicalProfile extends JFrame {
         sizeZ = Double.parseDouble(parameters[2]);
 
         points = (int)(sizeX/step);
+        directionX = new double[points][3];
         System.out.println("Number of points " + points);
 
-        double[][] massive = new double[points][3];
+        points = (int)(sizeY/step);
+        double [][] directionY = new double[points][3];
+        System.out.println("Number of points " + points);
+
+        points = (int)(Math.sqrt(sizeX*sizeX + sizeY*sizeY)/step);
+        double [][] directionXY = new double[points][3];
+        System.out.println("Number of points " + points);
+
+
+        double multiplyer = sizeX/sizeY;
 
         while(scanner.hasNext())
         {
@@ -54,90 +68,202 @@ public class ChemicalProfile extends JFrame {
                 double y = Double.parseDouble(str[2]);
                 double z = Double.parseDouble(str[3]);
 
-                if ((y > 160) || (y < 120))
-                   continue;
-
-                int N1 = (int)Math.round((x-mask-radiusAl)/step) - 100; // to remove numerical mistakes
-                int N2 = (int)Math.round((x+radiusAl)/step) + 100;
-
-                // avoiding borders
-                if (N1 < 0)
-                    N1 = 0;
-                if (N2 >= points)
-                    N2 = points - 1;
-
-                // loop through all masks, where the atom could be accounted
-                for (int i = N1; i <= N2; i++)
+                // x calculations
+                if ((y < 160) || (y > 120))
                 {
-                    double min = i*step; //lower border of mask
-                    double max = i*step + mask; // higher border of mask
+                    int N1 = (int)Math.round((x-mask-radiusAl)/step) - 100; // to remove numerical mistakes
+                    int N2 = (int)Math.round((x+radiusAl)/step) + 100;
 
-                    double volumePart = volume; // volume of the particle
+                    // avoiding borders
+                    if (N1 < 0)
+                        N1 = 0;
+                    if (N2 >= (int)(sizeX/step))
+                        N2 = (int)(sizeX/step) - 2;
 
-                    if ((min >= x + radiusAl)||(max <= x - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
-                        volumePart = 0;
-
-                    if(radiusAl > Math.abs(min - x)) // lower border
+                    // loop through all masks, where the atom could be accounted
+                    for (int i = N1; i <= N2; i++)
                     {
-                        double h = radiusAl - Math.abs(min - x); // height of the sector
-                        if (h <= radiusAl)
+                        double min = i*step; //lower border of mask
+                        double max = i*step + mask; // higher border of mask
+
+                        double volumePart = volume; // volume of the particle
+
+                        if ((min >= x + radiusAl)||(max <= x - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
+                            volumePart = 0;
+
+                        if(radiusAl > Math.abs(min - x)) // lower border
                         {
-                            if (x > min)
+                            double h = radiusAl - Math.abs(min - x); // height of the sector
+                            if (h <= radiusAl)
                             {
-                                volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
+                                if (x > min)
+                                {
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
+                                }
+                                else
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
                             }
-                            else
-                                volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
                         }
-                    }
-                    else if(radiusAl > Math.abs(max - x)) // higher border
-                    {
-                        double h = radiusAl - Math.abs(max - x);
-                        if (h <= radiusAl)
+                        else if(radiusAl > Math.abs(max - x)) // higher border
                         {
-                            if (x > max)
-                                volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
-                            else
-                                volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
+                            double h = radiusAl - Math.abs(max - x);
+                            if (h <= radiusAl)
+                            {
+                                if (x > max)
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
+                                else
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
+                            }
                         }
-                    }
 
-                    if(str[0].equals("21"))
-                        massive[i][1] += volumePart;
-                    else if(str[0].equals("40"))
-                        massive[i][2] += volumePart;
-                    else
-                        massive[i][0] += volumePart;
+                        if(str[0].equals("21"))
+                            directionX[i][1] += volumePart;
+                        else if(str[0].equals("40"))
+                            directionX[i][2] += volumePart;
+                        else
+                            directionX[i][0] += volumePart;
+                    }
                 }
+
+                // y calculations
+                if ((x < 220) || (x > 180))
+                {
+                    int N1 = (int)Math.round((y-mask-radiusAl)/step) - 100; // to remove numerical mistakes
+                    int N2 = (int)Math.round((y+radiusAl)/step) + 100;
+
+                    // avoiding borders
+                    if (N1 < 0)
+                        N1 = 0;
+                    if (N2 >= (int)(sizeY/step))
+                        N2 = (int)(sizeY/step) - 1;
+
+                    // loop through all masks, where the atom could be accounted
+                    for (int i = N1; i <= N2; i++)
+                    {
+                        double min = i*step; //lower border of mask
+                        double max = i*step + mask; // higher border of mask
+
+                        double volumePart = volume; // volume of the particle
+
+                        if ((min >= y + radiusAl)||(max <= y - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
+                            volumePart = 0;
+
+                        if(radiusAl > Math.abs(min - y)) // lower border
+                        {
+                            double h = radiusAl - Math.abs(min - y); // height of the sector
+                            if (h <= radiusAl)
+                            {
+                                if (y > min)
+                                {
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
+                                }
+                                else
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
+                            }
+                        }
+                        else if(radiusAl > Math.abs(max - y)) // higher border
+                        {
+                            double h = radiusAl - Math.abs(max - y);
+                            if (h <= radiusAl)
+                            {
+                                if (y > max)
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
+                                else
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
+                            }
+                        }
+
+                        if(str[0].equals("21"))
+                            directionY[i][1] += volumePart;
+                        else if(str[0].equals("40"))
+                            directionY[i][2] += volumePart;
+                        else
+                            directionY[i][0] += volumePart;
+                    }
+                }
+
+                // diagonal calculations
+                if ((x < multiplyer*y + 20) || (x > multiplyer*y - 20))
+                {
+                    int N1 = (int)Math.round((y-mask-radiusAl)/step) - 100; // to remove numerical mistakes
+                    int N2 = (int)Math.round((y+radiusAl)/step) + 100;
+
+                    // avoiding borders
+                    if (N1 < 0)
+                        N1 = 0;
+                    if (N2 >= points)
+                        N2 = points - 1;
+
+                    // loop through all masks, where the atom could be accounted
+                    for (int i = N1; i <= N2; i++)
+                    {
+                        double min = i*step; //lower border of mask
+                        double max = i*step + mask; // higher border of mask
+
+                        double volumePart = volume; // volume of the particle
+
+                        if ((min >= y + radiusAl)||(max <= y - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
+                            volumePart = 0;
+
+                        if(radiusAl > Math.abs(min - y)) // lower border
+                        {
+                            double h = radiusAl - Math.abs(min - y); // height of the sector
+                            if (h <= radiusAl)
+                            {
+                                if (y > min)
+                                {
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
+                                }
+                                else
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
+                            }
+                        }
+                        else if(radiusAl > Math.abs(max - y)) // higher border
+                        {
+                            double h = radiusAl - Math.abs(max - y);
+                            if (h <= radiusAl)
+                            {
+                                if (y > max)
+                                    volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
+                                else
+                                    volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
+                            }
+                        }
+
+                        if(str[0].equals("21"))
+                            directionXY[i][1] += volumePart;
+                        else if(str[0].equals("40"))
+                            directionXY[i][2] += volumePart;
+                        else
+                            directionXY[i][0] += volumePart;
+                    }
+                }
+
+
+
+
             }
         }
 
-        temp = new double[points][3];
-
-        // averaging
-        for(int i = 0 ; i < massive.length; i++)
-        {
-            for(int j = 0; j < 3; j++)
-                temp[i][j] = massive[i][j];
-        }
-
         // printing in file
-        int max = 0;
-        for(int i = (int)(mask/sizeY*points); i < temp.length - mask/sizeY*points*2; i++)
+        for(int i = (int)(mask/step); i < directionX.length - mask/step*2; i++)
         {
-            fw.write(i + " " + temp[i][0]  + " " + temp[i][1] + " " + temp[i][2] + "\n");
-            if (temp[i][0] > max)
-                max = (int)temp[i][0];
+            fw111.write(i + " " + directionX[i][0]  + " " + directionX[i][1] + " " + directionX[i][2] + "\n");
         }
 
-        System.out.println("Maximum is " + max);
+        for(int i = (int)(mask/step); i < directionY.length - mask/step*2; i++)
+        {
+            fw100.write(i + " " + directionY[i][0]  + " " + directionY[i][1] + " " + directionY[i][2] + "\n");
+        }
 
-        for (int i = 0; i < temp.length; i++)
-            for(int j = 0; j < 3; j++)
-                temp[i][j] = temp[i][j]/max;
+        for(int i = (int)(mask/step); i < directionXY.length - mask/step*2; i++)
+        {
+            fw110.write(i + " " + directionXY[i][0]  + " " + directionXY[i][1] + " " + directionXY[i][2] + "\n");
+        }
 
-
-        fw.close();
+        fw100.close();
+        fw110.close();
+        fw111.close();
         scanner.close();
 
         DensityChange gui = new DensityChange();
@@ -164,16 +290,16 @@ public class ChemicalProfile extends JFrame {
 
             g2.setColor(Color.red);
 
-            for(int i = (int)(mask/sizeX*points); i < temp.length - mask/sizeX*points*2; i++)
+            for(int i = (int)(mask/step); i < directionX.length - mask/step*2; i++)
             {
                 g2.setColor(Color.BLACK);
-                g2.fillRect(i, (int)(temp[i][0]*2698), 4, 4);
+                g2.fillRect(i, (int)(directionX[i][0]*2698), 4, 4);
                 g2.setColor(Color.RED);
-                g2.fillRect(i, (int)(temp[i][1]*4496), 4, 4);
+                g2.fillRect(i, (int)(directionX[i][1]*4496), 4, 4);
                 g2.setColor(Color.BLUE);
-                g2.fillRect(i, (int)(temp[i][2]*9122), 4, 4);
+                g2.fillRect(i, (int)(directionX[i][2]*9122), 4, 4);
 
-                System.out.println(i + " " + temp[i][0] + " " + temp[i][1] + " " + temp[i][2]);
+                System.out.println(i + " " + directionX[i][0] + " " + directionX[i][1] + " " + directionX[i][2]);
             }
 
 
