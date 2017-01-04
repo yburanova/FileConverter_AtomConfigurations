@@ -27,12 +27,12 @@ public class Main {
     private double[] min,max;
     
     File fileInput(){
-        File fileInp = new File("Al_boundary.121200.xyz"); //Исходный файл
+        File fileInp = new File("Al3Sc_110_8.170Angstrom_30Proz.xyz"); //Исходный файл
         return fileInp;
     }
     
     File fileOutputKirkland(){
-        File fileOut = new File("Al_boundary.121200_Kirkland.xyz");//Конечный файл
+        File fileOut = new File("Al3Sc_110_8.170Angstrom_30Proz_Kirkland.xyz");//Конечный файл
         return fileOut;
     }
     
@@ -77,7 +77,7 @@ public class Main {
 
     }
     
-    void WriterKirkland()
+    public void WriterKirkland()
     {
         try {
             writerCommand = new KirklandWriter();
