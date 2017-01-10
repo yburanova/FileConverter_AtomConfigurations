@@ -15,23 +15,26 @@ import java.util.Scanner;
 public class ChemicalProfile extends JFrame {
     static double mask = 4;
     static double radiusAl = 1.75; // Angstrom
-    static double volume = 4*Math.PI*radiusAl*radiusAl*radiusAl/3; // 22.4486 for ideal
+    public static final double volume = 4*Math.PI*radiusAl*radiusAl*radiusAl/3; // 22.4486 for ideal
     static double step = 0.3; // Angstrom
     static int points;
+    static int maskLength = 2;
 
     static double sizeX;
     static double sizeY;
     static double sizeZ;
 
     static double[][] directionX;
+    static double[][] directionY;
+    static double[][] directionXY;
 
     public static void main(String[] args) throws IOException
     {
-        Scanner scanner = new Scanner(new File("Al3Sc_110_8.125Angstrom_5Proz_Kirkland.xyz"));
+        Scanner scanner = new Scanner(new File("Al3Sc_110_8_ExchangedAtoms.xyz"));
 
-        FileWriter fw100 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_100.txt");
-        FileWriter fw110 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_110.txt");
-        FileWriter fw111 = new FileWriter("Al3Sc_110_8.125Angstrom_5Proz_Kirkland_profile_111.txt");
+        FileWriter fw100 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_100.txt");
+        FileWriter fw110 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_110.txt");
+        FileWriter fw111 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_111.txt");
 
         scanner.nextLine(); // line with comments
         String[] parameters = scanner.nextLine().split(" ");
@@ -46,11 +49,11 @@ public class ChemicalProfile extends JFrame {
         System.out.println("Number of points " + points);
 
         points = (int)(sizeY/step);
-        double [][] directionY = new double[points][3];
+        directionY = new double[points][3];
         System.out.println("Number of points " + points);
 
         points = (int)(Math.sqrt(sizeX*sizeX + sizeY*sizeY)/step);
-        double [][] directionXY = new double[points][3];
+        directionXY = new double[points][3];
         System.out.println("Number of points " + points);
 
 
@@ -69,7 +72,7 @@ public class ChemicalProfile extends JFrame {
                 double z = Double.parseDouble(str[3]);
 
                 // x calculations
-                if ((y < 160) || (y > 120))
+                if ((y <= sizeY/2 + maskLength) && (y >= sizeY/2 - maskLength))
                 {
                     int N1 = (int)Math.round((x-mask-radiusAl)/step) - 100; // to remove numerical mistakes
                     int N2 = (int)Math.round((x+radiusAl)/step) + 100;
@@ -78,7 +81,7 @@ public class ChemicalProfile extends JFrame {
                     if (N1 < 0)
                         N1 = 0;
                     if (N2 >= (int)(sizeX/step))
-                        N2 = (int)(sizeX/step) - 2;
+                        N2 = (int)(sizeX/step) - 1;
 
                     // loop through all masks, where the atom could be accounted
                     for (int i = N1; i <= N2; i++)
@@ -91,12 +94,12 @@ public class ChemicalProfile extends JFrame {
                         if ((min >= x + radiusAl)||(max <= x - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
                             volumePart = 0;
 
-                        if(radiusAl > Math.abs(min - x)) // lower border
+                        else if(radiusAl >= Math.abs(min - x)) // lower border
                         {
                             double h = radiusAl - Math.abs(min - x); // height of the sector
                             if (h <= radiusAl)
                             {
-                                if (x > min)
+                                if (x >= min)
                                 {
                                     volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
                                 }
@@ -104,12 +107,12 @@ public class ChemicalProfile extends JFrame {
                                     volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
                             }
                         }
-                        else if(radiusAl > Math.abs(max - x)) // higher border
+                        else if(radiusAl >= Math.abs(max - x)) // higher border
                         {
                             double h = radiusAl - Math.abs(max - x);
                             if (h <= radiusAl)
                             {
-                                if (x > max)
+                                if (x >= max)
                                     volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
                                 else
                                     volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
@@ -126,7 +129,7 @@ public class ChemicalProfile extends JFrame {
                 }
 
                 // y calculations
-                if ((x < 220) || (x > 180))
+                if ((x <= sizeX/2 + maskLength) && (x >= sizeX/2 - maskLength))
                 {
                     int N1 = (int)Math.round((y-mask-radiusAl)/step) - 100; // to remove numerical mistakes
                     int N2 = (int)Math.round((y+radiusAl)/step) + 100;
@@ -148,12 +151,12 @@ public class ChemicalProfile extends JFrame {
                         if ((min >= y + radiusAl)||(max <= y - radiusAl)) // if particle is not in the mask - remove from accounting (numerical problem)
                             volumePart = 0;
 
-                        if(radiusAl > Math.abs(min - y)) // lower border
+                        if(radiusAl >= Math.abs(min - y)) // lower border
                         {
                             double h = radiusAl - Math.abs(min - y); // height of the sector
                             if (h <= radiusAl)
                             {
-                                if (y > min)
+                                if (y >= min)
                                 {
                                     volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3; // remove sector
                                 }
@@ -161,12 +164,12 @@ public class ChemicalProfile extends JFrame {
                                     volumePart = Math.PI*h*h*(3*radiusAl - h)/3; // only sector is accounted
                             }
                         }
-                        else if(radiusAl > Math.abs(max - y)) // higher border
+                        else if(radiusAl >= Math.abs(max - y)) // higher border
                         {
                             double h = radiusAl - Math.abs(max - y);
                             if (h <= radiusAl)
                             {
-                                if (y > max)
+                                if (y >= max)
                                     volumePart = Math.PI*h*h*(3*radiusAl - h)/3;
                                 else
                                     volumePart = volume - Math.PI*h*h*(3*radiusAl - h)/3;
@@ -182,9 +185,11 @@ public class ChemicalProfile extends JFrame {
                     }
                 }
 
-                // diagonal calculations
-                if ((x < multiplyer*y + 20) || (x > multiplyer*y - 20))
+                // diagonal calculations -> projection on the Y-coordinate
+                if ((x < multiplyer*y + maskLength) && (x > multiplyer*y - maskLength))
                 {
+                    //double cos = 1 / Math.sqrt(multiplyer*multiplyer + 1);
+
                     int N1 = (int)Math.round((y-mask-radiusAl)/step) - 100; // to remove numerical mistakes
                     int N2 = (int)Math.round((y+radiusAl)/step) + 100;
 
@@ -290,18 +295,69 @@ public class ChemicalProfile extends JFrame {
 
             g2.setColor(Color.red);
 
-            for(int i = (int)(mask/step); i < directionX.length - mask/step*2; i++)
-            {
-                g2.setColor(Color.BLACK);
-                g2.fillRect(i, (int)(directionX[i][0]*2698), 4, 4);
-                g2.setColor(Color.RED);
-                g2.fillRect(i, (int)(directionX[i][1]*4496), 4, 4);
-                g2.setColor(Color.BLUE);
-                g2.fillRect(i, (int)(directionX[i][2]*9122), 4, 4);
+            double max = 0;
 
-                System.out.println(i + " " + directionX[i][0] + " " + directionX[i][1] + " " + directionX[i][2]);
+            // searching for maximum
+            for(int i = 0; i < directionX.length; i++)
+            {
+                double sum = directionX[i][0] + directionX[i][1] + directionX[i][2];
+                if (sum > max)
+                    max = sum;
             }
 
+            for(int i = 0; i < directionX.length*step * 2; i++)
+            {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(i, (int)(directionX[i][0]/max*600), 4, 4);
+                g2.setColor(Color.RED);
+                g2.fillRect(i, (int)(directionX[i][1]/max*600), 4, 4);
+                g2.setColor(Color.BLUE);
+                g2.fillRect(i, (int)(directionX[i][2]/max*600), 4, 4);
+
+                //System.out.println(i + " " + directionX[i][0] + " " + directionX[i][1] + " " + directionX[i][2]);
+            }
+
+            max = 0;
+
+            for(int i = 0; i < directionY.length; i++)
+            {
+                double sum = directionY[i][0] + directionY[i][1] + directionY[i][2];
+                if (sum > max)
+                    max = sum;
+            }
+
+            for(int i = 0; i < directionY.length*step * 2; i++)
+            {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(i, (int)(directionY[i][0]/max*600), 4, 4);
+                g2.setColor(Color.GRAY);
+                g2.fillRect(i, (int)(directionY[i][1]/max*600), 4, 4);
+                g2.setColor(Color.BLUE);
+                g2.fillRect(i, (int)(directionY[i][2]/max*600), 4, 4);
+
+                //System.out.println(i + " " + directionY[i][0] + " " + directionY[i][1] + " " + directionY[i][2]);
+            }
+
+            max = 0;
+
+            for(int i = 0; i < directionXY.length; i++)
+            {
+                double sum = directionXY[i][0] + directionXY[i][1] + directionXY[i][2];
+                if (sum > max)
+                    max = sum;
+            }
+
+            for(int i = 0; i < directionXY.length*step * 2; i++)
+            {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(i, (int)(directionXY[i][0]/max*600), 4, 4);
+                g2.setColor(Color.GREEN);
+                g2.fillRect(i, (int)(directionXY[i][1]/max*600), 4, 4);
+                g2.setColor(Color.BLUE);
+                g2.fillRect(i, (int)(directionXY[i][2]/max*600), 4, 4);
+
+                //System.out.println(i + " " + directionY[i][0] + " " + directionY[i][1] + " " + directionY[i][2]);
+            }
 
 
         }
