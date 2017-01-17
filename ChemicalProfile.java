@@ -18,7 +18,7 @@ public class ChemicalProfile extends JFrame {
     public static final double volume = 4*Math.PI*radiusAl*radiusAl*radiusAl/3; // 22.4486 for ideal
     static double step = 0.3; // Angstrom
     static int points;
-    static int maskLength = 2;
+    static int maskLength = 10;
 
     static double sizeX;
     static double sizeY;
@@ -30,11 +30,11 @@ public class ChemicalProfile extends JFrame {
 
     public static void main(String[] args) throws IOException
     {
-        Scanner scanner = new Scanner(new File("Al3Sc_110_8_ExchangedAtoms.xyz"));
+        Scanner scanner = new Scanner(new File("Al3Sc_110_8.170Angstrom_15Proz_Kirkland.xyz"));
 
-        FileWriter fw100 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_100.txt");
-        FileWriter fw110 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_110.txt");
-        FileWriter fw111 = new FileWriter("Al3Sc_110_8_ExchangedAtoms_profile_111.txt");
+        FileWriter fw100 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_100.txt");
+        FileWriter fw110 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_110.txt");
+        FileWriter fw111 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_111.txt");
 
         scanner.nextLine(); // line with comments
         String[] parameters = scanner.nextLine().split(" ");

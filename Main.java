@@ -27,12 +27,12 @@ public class Main {
     private double[] min,max;
     
     File fileInput(){
-        File fileInp = new File("Al3Sc_100_4.0.xyz"); //Исходный файл
+        File fileInp = new File("Al3Sc_110_8.170Angstrom_15Proz.xyz"); //Исходный файл
         return fileInp;
     }
     
     File fileOutputKirkland(){
-        File fileOut = new File("Al3Sc_100_4.0_Kirkland.xyz");//Конечный файл
+        File fileOut = new File("Al3Sc_110_8.170Angstrom_15Proz_Kirkland.xyz");//Конечный файл
         return fileOut;
     }
     
