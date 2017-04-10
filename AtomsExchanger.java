@@ -17,8 +17,8 @@ public class AtomsExchanger {
         int totalScInShell = 0;
 
         // reading and writing files
-        Scanner scanner = new Scanner(new File("Al3Sc_110_8.170Angstrom_15Proz.xyz"));
-        FileWriter fw = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_ExchangedAtoms.xyz");
+        Scanner scanner = new Scanner(new File("Al3Sc_110_8.150Angstrom_10Proz.xyz"));
+        FileWriter fw = new FileWriter("Al3Sc_110_8.150Angstrom_10Proz_ExchangedAtoms.xyz");
 
         int atomsNumber = Integer.parseInt(scanner.nextLine());
         fw.write(atomsNumber + "\n");
@@ -30,7 +30,6 @@ public class AtomsExchanger {
             String text = scanner.nextLine();
 
             // The particle is in [110] direction
-            // We calculate random theta and phi as it would be for [100], then turn it to 45 grad
 
             String[] str = text.split(" "); // atom coordinates
 
@@ -45,10 +44,8 @@ public class AtomsExchanger {
             if(atomType == 4 || atomType == 5)
                 totalScInShell++;
 
-            if (atomType == 5)
+            if (atomType == 4 || atomType == 5)
             {
-
-                double thetaBasic = Math.toDegrees(Math.acos(1/Math.sqrt(3)));
 
                 double theta;
                 double phi;
@@ -82,9 +79,10 @@ public class AtomsExchanger {
                     phi = 270;
 
                 if (thetaCurrent < 90)
-                    theta = thetaBasic;
+                    theta = Math.toDegrees(Math.acos(1.0/Math.sqrt(3)));
                 else
-                    theta = thetaBasic + 90;
+                    theta = Math.toDegrees(Math.acos(Math.sqrt(2.0/3.0))) + 90;
+
 
                 // defining the angle between the current direction and [111]
 
@@ -93,10 +91,14 @@ public class AtomsExchanger {
 
                 // defining the random number, if it larger than the probability number -> exchange
                 double randomNumber = Math.random();
-                if (randomNumber > probability)
+                if (randomNumber < probability)
+                {
+                    atomTypeNew = 5;
+                    numberOfExchanges++;
+                }
+                else if (randomNumber > probability && atomType == 5)
                 {
                     atomTypeNew = 4;
-                    numberOfExchanges++;
                 }
 
             }

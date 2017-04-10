@@ -32,16 +32,16 @@ public class KirklandWriter implements WriterCommand
         for (int j = 0; j < N; j++)
         {
             // defining the type of atoms
-            if((int)atomicPositions[0][j] == 2 || (int)atomicPositions[0][j] == 4)
+            if((int)atomicPositions[0][j] == 1 || (int)atomicPositions[0][j] == 4)
             {
-                kirk[0][j]= 21 +" ";
+                kirk[0][j]= 29 + " ";
             }
             else if((int)atomicPositions[0][j] == 5)
             {
                 kirk[0][j] = 40 + " ";
             }
             else {
-                kirk[0][j]= 13 +" ";
+                kirk[0][j]= 47 +" ";
             }
 
             // new massive

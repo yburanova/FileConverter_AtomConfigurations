@@ -30,11 +30,11 @@ public class ChemicalProfile extends JFrame {
 
     public static void main(String[] args) throws IOException
     {
-        Scanner scanner = new Scanner(new File("Al3Sc_110_8.170Angstrom_15Proz_Kirkland.xyz"));
+        Scanner scanner = new Scanner(new File("Al3Sc_110_8.150Angstrom_10Proz_ExchangedAtoms_Kirkland.xyz"));
 
-        FileWriter fw100 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_100.txt");
-        FileWriter fw110 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_110.txt");
-        FileWriter fw111 = new FileWriter("Al3Sc_110_8.170Angstrom_15Proz_Kirkland_profile_111.txt");
+        FileWriter fw100 = new FileWriter("Al3Sc_110_8.150Angstrom_10Proz_ExchangedAtoms_Kirkland_profile_100.txt");
+        FileWriter fw110 = new FileWriter("Al3Sc_110_8.150Angstrom_10Proz_ExchangedAtoms_Kirkland_profile_110.txt");
+        FileWriter fw111 = new FileWriter("Al3Sc_110_8.150Angstrom_10Proz_ExchangedAtoms_Kirkland_profile_111.txt");
 
         scanner.nextLine(); // line with comments
         String[] parameters = scanner.nextLine().split(" ");
